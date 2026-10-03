@@ -1,0 +1,12 @@
+name: Feature request
+description: Suggest an additional framework or benchmark mode.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the service or benchmark change and its purpose.
+    validations:
+      required: true

@@ -1,0 +1,258 @@
+x-healthcheck-python: &healthcheck-python
+  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=2)"]
+  interval: 10s
+  timeout: 3s
+  retries: 3
+  start_period: 5s
+
+x-healthcheck-wget: &healthcheck-wget
+  test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8000/ >/dev/null"]
+  interval: 10s
+  timeout: 3s
+  retries: 3
+  start_period: 5s
+
+x-healthcheck-node: &healthcheck-node
+  test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+  interval: 10s
+  timeout: 3s
+  retries: 3
+  start_period: 5s
+
+x-healthcheck-curl: &healthcheck-curl
+  test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/"]
+  interval: 10s
+  timeout: 3s
+  retries: 3
+  start_period: 5s
+
+services:
+  django:
+    build: ./services/django
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-python
+    cpuset: "0"
+    ports:
+      - "8101:8000"
+    restart: "no"
+
+  fastapi:
+    build: ./services/fastapi
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-python
+    cpuset: "1"
+    ports:
+      - "8102:8000"
+    restart: "no"
+
+  django-bolt:
+    build: ./services/django-bolt
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-python
+    cpuset: "2"
+    ports:
+      - "8103:8000"
+    restart: "no"
+
+  go-echo:
+    build: ./services/go-echo
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-wget
+    cpuset: "3"
+    ports:
+      - "8104:8000"
+    restart: "no"
+
+  go-echo4:
+    build: ./services/go-echo
+    profiles: ["variants"]
+    healthcheck: *healthcheck-wget
+    environment:
+      ECHO_WORKERS: "4"
+    cpuset: "0-3"
+    ports:
+      - "8122:8000"
+    restart: "no"
+
+  rust-axum:
+    build: ./services/rust-axum
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-wget
+    cpuset: "4"
+    ports:
+      - "8105:8000"
+    restart: "no"
+
+  rust-axum4:
+    build: ./services/rust-axum
+    profiles: ["variants"]
+    healthcheck: *healthcheck-wget
+    environment:
+      TOKIO_WORKERS: "4"
+    cpuset: "0-3"
+    ports:
+      - "8123:8000"
+    restart: "no"
+
+  php:
+    build: ./services/php
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-wget
+    cpuset: "5"
+    ports:
+      - "8106:8000"
+    restart: "no"
+
+  node:
+    build: ./services/node
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-node
+    cpuset: "6"
+    ports:
+      - "8107:8000"
+    restart: "no"
+
+  java:
+    build: ./services/java
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-wget
+    cpuset: "7"
+    ports:
+      - "8108:8000"
+    restart: "no"
+
+  java4:
+    build: ./services/java
+    profiles: ["variants"]
+    healthcheck: *healthcheck-wget
+    environment:
+      JAVA_WORKERS: "4"
+    cpuset: "0-3"
+    ports:
+      - "8124:8000"
+    restart: "no"
+
+  express:
+    build: ./services/express
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-node
+    cpuset: "8"
+    ports:
+      - "8109:8000"
+    restart: "no"
+
+  fastify:
+    build: ./services/fastify
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-node
+    cpuset: "9"
+    ports:
+      - "8110:8000"
+    restart: "no"
+
+  csharp:
+    build: ./services/csharp
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-curl
+    cpuset: "10"
+    ports:
+      - "8111:8000"
+    restart: "no"
+
+  cpp:
+    build: ./services/cpp
+    profiles: ["baseline"]
+    healthcheck: *healthcheck-wget
+    cpuset: "11"
+    ports:
+      - "8112:8000"
+    restart: "no"
+
+  cpp4:
+    build: ./services/cpp
+    profiles: ["variants"]
+    healthcheck: *healthcheck-wget
+    environment:
+      CPP_WORKERS: "4"
+    cpuset: "0-3"
+    ports:
+      - "8125:8000"
+    restart: "no"
+
+  django-uwsgi:
+    build: ./services/django-uwsgi
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    cpuset: "0-3"
+    ports:
+      - "8113:8000"
+    restart: "no"
+
+  django-waitress:
+    build: ./services/django-waitress
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    cpuset: "0-3"
+    ports:
+      - "8114:8000"
+    restart: "no"
+
+  django-gunicorn4:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+    cpuset: "0-3"
+    ports:
+      - "8116:8000"
+    restart: "no"
+
+  django-uvicorn4:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+    cpuset: "0-3"
+    ports:
+      - "8117:8000"
+    restart: "no"
+
+  django-gunicorn2:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+    cpuset: "0-3"
+    ports:
+      - "8118:8000"
+    restart: "no"
+
+  django-gunicorn-gthread:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--worker-class", "gthread", "--workers", "4", "--threads", "4"]
+    cpuset: "0-3"
+    ports:
+      - "8119:8000"
+    restart: "no"
+
+  django-uvicorn1-asyncio:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--loop", "asyncio", "--http", "h11"]
+    cpuset: "0-3"
+    ports:
+      - "8120:8000"
+    restart: "no"
+
+  django-uvicorn4-optimized:
+    build: ./services/django
+    profiles: ["variants"]
+    healthcheck: *healthcheck-python
+    command: ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--loop", "uvloop", "--http", "httptools"]
+    cpuset: "0-3"
+    ports:
+      - "8121:8000"
+    restart: "no"

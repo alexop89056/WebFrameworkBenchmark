@@ -1,0 +1,1 @@
+django-bolt==0.7.0

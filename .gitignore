@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS and local files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Benchmark output
+*.log
+results/
+
+# Build artifacts
+target/
+bin/
+dist/
+build/
+coverage/

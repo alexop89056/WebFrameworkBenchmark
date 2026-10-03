@@ -1,0 +1,19 @@
+name: Bug report
+description: Report a reproducible problem with a service or benchmark.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include the service, command, and relevant logs.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, Docker, CPU, and benchmark command.
+    validations:
+      required: true
